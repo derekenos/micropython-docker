@@ -1,0 +1,8 @@
+
+TMP_DIR=/tmp/ampy
+
+mkdir -p $TMP_DIR
+ampy get $1 $TMP_DIR/$1
+emacs $TMP_DIR/$1
+ampy put $TMP_DIR/$1
+rm -rf $TMP_DIR
