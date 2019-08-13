@@ -27,7 +27,7 @@ WORKDIR esp-idf
 
 RUN git checkout `make -f /usr/src/app/micropython/ports/esp32/Makefile 2>&1 | grep Supported\ git\ hash | grep -o -P '\w+$'`
 
-RUN git submodule update --recursive
+RUN git submodule update --init --recursive
 
 # https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html#install-the-required-python-packages
 RUN pip install -r requirements.txt
