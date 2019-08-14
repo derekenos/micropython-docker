@@ -1,0 +1,53 @@
+#!/bin/bash
+
+
+if [ "$#" -ne 1 ]; then
+    echo  "usage: freeze <portName>"
+    exit 1
+fi
+
+PORT_NAME=$1
+
+# Expect that the caller will mount the volume (directory) containing
+# the python modules that they want to freeze as /mnt
+# Example: docker run -v <localDir>:/mnt <imageName> scripts/freeze <portname>
+INPUT_DIR=/mnt
+
+# Frozen modules will be copied into the input dir subdir frozen/
+OUTPUT_DIR=$INPUT_DIR/frozen
+
+# Configure port-specific directories
+# Not that this currently only works for esp32
+PORTS_DIR=/app/micropython/ports
+PORT_DIR=$PORTS_DIR/$PORT_NAME
+PORT_FROZEN_MODULE_INPUT_DIR=$PORT_DIR/modules
+PORT_FROZEN_MODULE_OUTPUT_DIR=$PORT_DIR/build/frozen_mpy
+
+# Check that all the port-specific directories exist
+ERROR=0
+if [ ! -d "$PORT_DIR" ]; then
+    echo "Not found: $PORT_DIR"
+    ERROR=1
+fi
+if [ ! -d "$PORT_FROZEN_MODULE_INPUT_DIR" ]; then
+    echo "Not found: $PORT_FROZEN_MODULE_INPUT_DIR"
+    ERROR=1
+fi
+if [ ! -d "$PORT_FROZEN_MODULE_OUTPUT_DIR" ]; then
+    echo "Not found: $PORT_FROZEN_MODULE_OUTPUT_DIR"
+    ERROR=1
+fi
+if [ "$ERROR" -eq "1" ]; then
+    exit 1
+fi
+
+# Freeze the modules
+cd $PORT_DIR
+cp $INPUT_DIR/* $PORT_FROZEN_MODULE_INPUT_DIR
+make
+mkdir -p $OUTPUT_DIR
+for f in `ls $INPUT_DIR/*.py`; do
+    f=`basename $f`
+    cp $PORT_FROZEN_MODULE_OUTPUT_DIR/${f%%.*}.mpy $OUTPUT_DIR;
+done
+chmod --recursive a+rw $OUTPUT_DIR
