@@ -1,0 +1,11 @@
+version: "2"
+
+services:
+  app:
+    build: .
+    image: micropython-docker
+    volumes:
+      - ./devicefs:/app/devicefs
+      - ./scripts:/app/scripts
+    stdin_open: true
+    tty: true

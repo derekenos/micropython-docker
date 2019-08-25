@@ -1,0 +1,15 @@
+
+# Fail on first non-zreo exit code
+set -e
+
+echo Copying files from ./devicefs/ to device root
+ampy put devicefs /
+
+echo Resetting the device
+ampy reset
+
+mac_addr=`ampy run scripts/print_mac_address.py`
+echo "Device MAC address is: $mac_addr"
+
+ip_addr=`ampy run scripts/print_ip_address.py`
+echo "visit http://micropython.org/webrepl/ using IP address: $ip_addr"

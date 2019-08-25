@@ -1,0 +1,9 @@
+version: "2"
+
+services:
+  app:
+    extends:
+      file: docker-compose-no-device.yml
+      service: app
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0

@@ -1,18 +1,24 @@
-# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
-
 FROM python:3
 
-# Install required system packages
+###############################################################################
+# Install System Packages
+###############################################################################
+
+# Install system packages
 RUN apt-get update && apt-get install -y \
     git \
     make \
     screen
 
-# Clone micropython
+
+###############################################################################
+# Set up ESP-IDF
+###############################################################################
+
+# Clone micropython now so that we can get the hash of the ESP IDF version that
+# it supports.
 WORKDIR /app
-
 RUN git clone https://github.com/micropython/micropython.git
-
 
 # Set up the toolchain and ESP-IDF
 # https://github.com/micropython/micropython/tree/master/ports/esp32#setting-up-the-toolchain-and-esp-idf
@@ -34,7 +40,6 @@ RUN pip install -r requirements.txt
 
 RUN echo export IDF_PATH="/app/esp/esp-idf" >> ~/.bashrc \
     && exec bash
-
 
 # Set up the Xtensa cross-compiler
 RUN apt-get install -y \
@@ -66,25 +71,68 @@ RUN echo export PATH="$PATH:/app/esp/xtensa-esp32-elf/bin" >> ~/.bashrc\
     && exec bash
 
 
+###############################################################################
+# Build Micropython
+###############################################################################
+
 # Build the firmare
 # https://github.com/micropython/micropython/tree/master/ports/esp32#building-the-firmware
 WORKDIR /app/micropython
 
-# RUN git submodule update --init # commented out 20190218
-
+# Build the cross compiler.
 RUN make -C mpy-cross \
     && git submodule init lib/berkeley-db-1.xx \
     && git submodule update
+RUN echo 'alias freeze=/app/micropython/mpy-cross/mpy-cross/ %1 && '\
+    'chown `stat -c%u %1` ${f%%.*}.mpy'>>  ~/.bashrc
 
-WORKDIR ports/esp32
+# Build the desired ports.
+WORKDIR ports
 
+# Unix
+WORKDIR unix
+RUN git submodule update --init
+RUN make
+
+# ESP32
+WORKDIR ../esp32
 ENV ESPIDF="/app/esp/esp-idf"
-
 RUN echo export ESPIDF="/app/esp/esp-idf" >> ~/.bashrc \
     && exec bash
 RUN make
+
+
+###############################################################################
+# Install Device Management Utilities
+###############################################################################
+
+ARG DEVICE_PORT=/dev/ttyUSB0
+
+RUN echo export DEVICE_PORT=$DEVICE_PORT >>  ~/.bashrc
+
+# Install Adafruit ampy utility for interacting with the pyboard filesystem.
+RUN pip install adafruit-ampy
+RUN echo export AMPY_PORT=$DEVICE_PORT >>  ~/.bashrc
+
+
+# Install esptool
+RUN pip install esptool
+RUN echo export ESPTOOL_PORT=$DEVICE_PORT >>  ~/.bashrc
+RUN echo export ESPTOOL_BAUD=460800 >>  ~/.bashrc
+
+
+###############################################################################
+# Copy Custom Scripts
+###############################################################################
 
 WORKDIR /app
 
 RUN mkdir scripts
 COPY scripts scripts
+
+
+###############################################################################
+# Set defaut image command
+###############################################################################
+
+CMD ["/bin/bash"]
