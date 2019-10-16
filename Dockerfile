@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
 # it supports.
 WORKDIR /app
 RUN git clone https://github.com/micropython/micropython.git
+WORKDIR micropython
+RUN git reset --hard ce1de1faf082abfcc5469ad3d70b88aaa0060ec3
 
 # Set up the toolchain and ESP-IDF
 # https://github.com/micropython/micropython/tree/master/ports/esp32#setting-up-the-toolchain-and-esp-idf
@@ -31,7 +33,7 @@ RUN git clone --recursive https://github.com/espressif/esp-idf.git
 
 WORKDIR esp-idf
 
-RUN git checkout `make -f /app/micropython/ports/esp32/Makefile 2>&1 | grep Supported\ git\ hash | grep -o -P '\w+$'`
+RUN git checkout `make -f /app/micropython/ports/esp32/Makefile BOARD_DIR=/app/micropython/ports/esp32/boards/GENERIC 2>&1 | grep Supported\ git\ hash | grep -o -P -m1 '\w+$'`
 
 RUN git submodule update --init --recursive
 
