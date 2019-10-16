@@ -85,8 +85,8 @@ WORKDIR /app/micropython
 RUN make -C mpy-cross \
     && git submodule init lib/berkeley-db-1.xx \
     && git submodule update
-RUN echo 'alias freeze=/app/micropython/mpy-cross/mpy-cross/ %1 && '\
-    'chown `stat -c%u %1` ${f%%.*}.mpy'>>  ~/.bashrc
+RUN echo 'function freeze(){ /app/micropython/mpy-cross/mpy-cross $1;  '\
+    'chown `stat -c%u $1` ${1%%.*}.mpy; }' >>  ~/.bashrc
 
 # Build the desired ports.
 WORKDIR ports
