@@ -7,11 +7,10 @@ for f in `ls -tF devicefs`; do
   echo "Putting: $f"; ampy put devicefs/$f $f;
 done
 
-echo Resetting the device
-ampy reset
-
 mac_addr=`ampy run scripts/print_mac_address.py`
 echo "Device MAC address is: $mac_addr"
 
-ip_addr=`ampy run scripts/print_ip_address.py`
-echo "visit http://micropython.org/webrepl/ using IP address: $ip_addr"
+echo Resetting the device
+# The reset command fails with on timeout even though the reset occurs, so do
+# an || true to ignore it.
+ampy reset --hard > /dev/null 2>&1 || true
