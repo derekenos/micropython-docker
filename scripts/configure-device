@@ -3,7 +3,9 @@
 set -e
 
 echo Copying files from ./devicefs/ to device root
-ampy put devicefs /
+for f in `ls -tF devicefs`; do
+  echo "Putting: $f"; ampy put devicefs/$f $f;
+done
 
 echo Resetting the device
 ampy reset
