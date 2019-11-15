@@ -3,8 +3,16 @@
 set -e
 
 echo Copying files from ./devicefs/ to device root
-for f in `ls -tF devicefs`; do
-  echo "Putting: $f"; ampy put devicefs/$f $f;
+for f in `find devicefs/ -name '*.py' -o -name '*.json' -o -name '*.html' -o -name '*.js' -o -name '*.css'`; do
+    ff=${f#devicefs/}
+    echo "Putting: $ff";
+    set +e
+    if ! ampy put $f $ff > /dev/null 2>&1; then
+       set -e
+       ampy mkdir `dirname $ff`
+       ampy put $f $ff
+    fi
+    set -e
 done
 
 mac_addr=`ampy run scripts/print_mac_address.py`
