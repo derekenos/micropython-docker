@@ -17,10 +17,12 @@ RUN apt-get update && apt-get install -y \
 
 # Clone micropython now so that we can get the hash of the ESP IDF version that
 # it supports.
+
+
+ARG branch=master
+
 WORKDIR /app
-RUN git clone https://github.com/micropython/micropython.git
-WORKDIR micropython
-RUN git reset --hard ce1de1faf082abfcc5469ad3d70b88aaa0060ec3
+RUN git clone -b ${branch} https://github.com/pfalcon/pycopy.git micropython
 
 # Set up the toolchain and ESP-IDF
 # https://github.com/micropython/micropython/tree/master/ports/esp32#setting-up-the-toolchain-and-esp-idf
