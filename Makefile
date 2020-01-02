@@ -6,8 +6,11 @@ error:
 	echo "Type make<TAB><TAB> to see the available targets"
 
 
-shell:
-	$(DOCKER_COMPOSE) run --rm app /bin/bash
+up:
+	$(DOCKER_COMPOSE) up -d
+
+shell: up
+	$(DOCKER_COMPOSE) exec app /bin/bash
 
 
 erase-esp32-flash:
