@@ -35,7 +35,8 @@ RUN git clone --recursive https://github.com/espressif/esp-idf.git
 
 WORKDIR esp-idf
 
-RUN git checkout `make -f /app/micropython/ports/esp32/Makefile BOARD_DIR=/app/micropython/ports/esp32/boards/GENERIC 2>&1 | grep Supported\ git\ hash | grep -o -P -m1 '\w+$'`
+RUN git checkout $(grep "^ESPIDF_SUPHASH_V3" /app/micropython/ports/esp32/Makefile | awk '{print $NF}')
+# `make -f /app/micropython/ports/esp32/Makefile BOARD_DIR=/app/micropython/ports/esp32/boards/GENERIC 2>&1 | grep Supported\ git\ hash | grep -o -P -m1 '\w+$'`
 
 RUN git submodule update --init --recursive
 
