@@ -9,6 +9,9 @@ error:
 up:
 	$(DOCKER_COMPOSE) up -d
 
+build:
+	$(DOCKER_COMPOSE) build app
+
 shell: up
 	$(DOCKER_COMPOSE) exec app /bin/bash
 
