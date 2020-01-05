@@ -36,7 +36,7 @@ repl:
 DOCKER_CONTAINER=$(shell $(DOCKER_COMPOSE) ps -q app)
 # firmware path in docker container
 DFIRMWARE_PATH=/app/micropython/ports/esp32/build-GENERIC/firmware.bin
-LFIRMWARE_PATH=.tmp/firmware.bin
+LFIRMWARE_PATH=.tmp/firmware.bin  # TODO: .tmp should maybe have different name
 # temporary path to boot.py and webrepl_cfg.py with substituted password/etc
 BOOT_PY=.tmp/boot.py
 WEBREPL_CFG_PY=.tmp/webrepl_cfg.py
@@ -65,20 +65,33 @@ SSH_ESPTOOL=$(SSH_CMD) $(PI_ESPTOOL_CMD) --port $(PI_DEVICE)
 # get firmware from docker to here
 download_esp32_firmware: $(LFIRMWARE_PATH)
 
-$(LFIRMWARE_PATH): up
+$(LFIRMWARE_PATH):
+	make up
 	mkdir -p $(shell dirname $(LFIRMWARE_PATH))
 	docker cp $(DOCKER_CONTAINER):$(DFIRMWARE_PATH) $(LFIRMWARE_PATH)
 
 ssh_minicom:
-	$(SSH_CMD) minicom -D /dev/ttyUSB0
+	$(SSH_CMD) -t minicom -D /dev/ttyUSB0
 
-ssh_flash_esp32: $(LFIRMWARE_PATH) $(BOOT_PY) $(WEBREPL_CFG_PY)
+ssh_flash_esp32: .tmp/.files_scpied
 	# scp files to banana pi
-	scp -i $(SSH_KEY) $(LFIRMWARE_PATH) $(WEBREPL_CFG_PY) $(BOOT_PY) $(SSH_USERHOST):/tmp/
 	$(SSH_ESPTOOL) erase_flash
 	$(SSH_ESPTOOL) write_flash -z 0x1000 /tmp/firmware.bin
+
+ssh_install_webrepl: .tmp/.boot_installed .tmp/.webrepl_cfg_installed
+
+.tmp/.files_scpied: $(LFIRMWARE_PATH) $(BOOT_PY) $(WEBREPL_CFG_PY)
+	scp -i $(SSH_KEY) $(LFIRMWARE_PATH) $(WEBREPL_CFG_PY) $(BOOT_PY) $(SSH_USERHOST):/tmp/
+	touch $@
+
+
+.tmp/.boot_installed: .tmp/.files_scpied
 	$(SSH_AMPY) put /tmp/boot.py 
+	touch $@
+
+.tmp/.webrepl_cfg_installed: .tmp/.files_scpied
 	$(SSH_AMPY) put /tmp/webrepl_cfg.py
+	touch $@
 
 $(BOOT_PY): scripts/boot.py.base
 	cp $< $(BOOT_PY)
@@ -88,3 +101,6 @@ $(BOOT_PY): scripts/boot.py.base
 $(WEBREPL_CFG_PY): scripts/webrepl_cfg.py.base
 	cp $< $(WEBREPL_CFG_PY)
 	sed -i s/{WEBREPL_PASS}/$(WEBREPL_PASS)/g $(WEBREPL_CFG_PY)
+
+clean_ssh:
+	rm -rf .tmp
