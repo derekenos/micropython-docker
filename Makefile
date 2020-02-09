@@ -51,7 +51,13 @@ WEBREPL_PASS=foo
 WIFI_SSID=wifissid
 WIFI_PASS=wifikey
 
-PI_PREFIX=/home/pi/venv/bin/
+# if empty - then will take command from path
+# other possibilities
+# PI_PREFIX=/home/pi/venv/bin/
+# or
+# PI_PREFIX=/usr/local/bin
+# 
+PI_PREFIX=
 PI_AMPY_CMD=$(PI_PREFIX)ampy
 PI_ESPTOOL_CMD=$(PI_PREFIX)esptool.py
 PI_DEVICE=/dev/ttyUSB0
