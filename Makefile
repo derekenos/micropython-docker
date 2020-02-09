@@ -55,8 +55,9 @@ PI_PREFIX=/home/pi/venv/bin/
 PI_AMPY_CMD=$(PI_PREFIX)ampy
 PI_ESPTOOL_CMD=$(PI_PREFIX)esptool.py
 PI_DEVICE=/dev/ttyUSB0
+PI_AMPY_DELAY=5
 
-SSH_AMPY=$(SSH_CMD) $(PI_AMPY_CMD) -p $(PI_DEVICE)
+SSH_AMPY=$(SSH_CMD) $(PI_AMPY_CMD) -p $(PI_DEVICE) -d $(PI_AMPY_DELAY)
 SSH_ESPTOOL=$(SSH_CMD) $(PI_ESPTOOL_CMD) --port $(PI_DEVICE)
 
 # put sensitive and local variables in to private.mk, which won't be commited
@@ -78,7 +79,7 @@ ssh_flash_esp32: .tmp/.files_scpied
 	$(SSH_ESPTOOL) erase_flash
 	$(SSH_ESPTOOL) write_flash -z 0x1000 /tmp/firmware.bin
 
-ssh_install_webrepl: .tmp/.boot_installed .tmp/.webrepl_cfg_installed
+ssh_install_webrepl: .tmp/.webrepl_cfg_installed .tmp/.boot_installed 
 
 .tmp/.files_scpied: $(LFIRMWARE_PATH) $(BOOT_PY) $(WEBREPL_CFG_PY)
 	scp -i $(SSH_KEY) $(LFIRMWARE_PATH) $(WEBREPL_CFG_PY) $(BOOT_PY) $(SSH_USERHOST):/tmp/
