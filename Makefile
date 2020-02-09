@@ -77,18 +77,26 @@ ssh_reinstall_all: clean_ssh ssh_all
 # get firmware from docker to here
 download_esp32_firmware: $(LFIRMWARE_PATH)
 
+ssh_minicom:
+	$(SSH_CMD) -t minicom -D /dev/ttyUSB0
+
+ssh_flash_esp32: .tmp/.flashed
+
+clean_ssh:
+	rm -rf .tmp
+
 $(LFIRMWARE_PATH):
 	make up
 	mkdir -p $(shell dirname $(LFIRMWARE_PATH))
 	docker cp $(DOCKER_CONTAINER):$(DFIRMWARE_PATH) $(LFIRMWARE_PATH)
 
-ssh_minicom:
-	$(SSH_CMD) -t minicom -D /dev/ttyUSB0
 
-ssh_flash_esp32: .tmp/.files_scpied
+
+.tmp/.flashed: .tmp/.files_scpied
 	# scp files to banana pi
 	$(SSH_ESPTOOL) erase_flash
 	$(SSH_ESPTOOL) write_flash -z 0x1000 /tmp/firmware.bin
+	touch $@
 
 ssh_install_webrepl: .tmp/.webrepl_cfg_installed .tmp/.boot_installed 
 
@@ -97,11 +105,11 @@ ssh_install_webrepl: .tmp/.webrepl_cfg_installed .tmp/.boot_installed
 	touch $@
 
 
-.tmp/.boot_installed: .tmp/.files_scpied
+.tmp/.boot_installed: .tmp/.files_scpied .tmp/.flashed
 	$(SSH_AMPY) put /tmp/boot.py 
 	touch $@
 
-.tmp/.webrepl_cfg_installed: .tmp/.files_scpied
+.tmp/.webrepl_cfg_installed: .tmp/.files_scpied .tmp/.flashed
 	$(SSH_AMPY) put /tmp/webrepl_cfg.py
 	touch $@
 
@@ -113,6 +121,3 @@ $(BOOT_PY): scripts/boot.py.base
 $(WEBREPL_CFG_PY): scripts/webrepl_cfg.py.base
 	cp $< $(WEBREPL_CFG_PY)
 	sed -i s/{WEBREPL_PASS}/$(WEBREPL_PASS)/g $(WEBREPL_CFG_PY)
-
-clean_ssh:
-	rm -rf .tmp
