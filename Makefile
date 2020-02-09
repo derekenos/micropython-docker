@@ -69,6 +69,11 @@ SSH_ESPTOOL=$(SSH_CMD) $(PI_ESPTOOL_CMD) --port $(PI_DEVICE)
 # put sensitive and local variables in to private.mk, which won't be commited
 -include private.mk
 
+# do all: flash and install webrepl
+ssh_all: ssh_flash_esp32 ssh_install_webrepl
+
+ssh_reinstall_all: clean_ssh ssh_all
+
 # get firmware from docker to here
 download_esp32_firmware: $(LFIRMWARE_PATH)
 
