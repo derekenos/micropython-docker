@@ -1,5 +1,12 @@
 DC_FILE=docker-compose.yml
 DOCKER_COMPOSE=docker-compose -f $(DC_FILE)
+BRANCH=master
+
+ifeq ($(FLAVOUR), pycopy)
+	REPO=https://github.com/pfalcon/pycopy.git
+else
+	REPO=https://github.com/micropython/micropython
+endif
 
 
 error:
@@ -10,7 +17,9 @@ up:
 	$(DOCKER_COMPOSE) up -d
 
 build:
-	$(DOCKER_COMPOSE) build app
+	$(DOCKER_COMPOSE) build --build-arg repo=$(REPO) --build-arg branch=$(BRANCH) app
+	# invalidate "downloaded from docker" target
+	rm -f $(LFIRMWARE_PATH)
 
 shell: up
 	$(DOCKER_COMPOSE) exec app /bin/bash
@@ -33,7 +42,7 @@ repl:
 
 
 # initialize device via ssh jumpstation
-DOCKER_CONTAINER=$(shell $(DOCKER_COMPOSE) ps -q app)
+DOCKER_CONTAINER=`$(DOCKER_COMPOSE) ps -q app`
 # firmware path in docker container
 DFIRMWARE_PATH=/app/micropython/ports/esp32/build-GENERIC/firmware.bin
 LFIRMWARE_PATH=.tmp/firmware.bin  # TODO: .tmp should maybe have different name
@@ -88,6 +97,7 @@ clean_ssh:
 $(LFIRMWARE_PATH):
 	make up
 	mkdir -p $(shell dirname $(LFIRMWARE_PATH))
+	# if you build 
 	docker cp $(DOCKER_CONTAINER):$(DFIRMWARE_PATH) $(LFIRMWARE_PATH)
 
 
