@@ -1,6 +1,7 @@
 DC_FILE=docker-compose.yml
 DOCKER_COMPOSE=docker-compose -f $(DC_FILE)
 BRANCH=master
+export FLAVOUR?=micropython
 
 ifeq ($(FLAVOUR), pycopy)
 	REPO=https://github.com/pfalcon/pycopy.git
@@ -12,9 +13,8 @@ endif
 error:
 	echo "Type make<TAB><TAB> to see the available targets"
 
-
-up:
-	$(DOCKER_COMPOSE) up -d
+up: 
+	$(DOCKER_COMPOSE) up -d --no-build
 
 build:
 	$(DOCKER_COMPOSE) build --build-arg repo=$(REPO) --build-arg branch=$(BRANCH) app
@@ -45,7 +45,7 @@ repl:
 DOCKER_CONTAINER=`$(DOCKER_COMPOSE) ps -q app`
 # firmware path in docker container
 DFIRMWARE_PATH=/app/micropython/ports/esp32/build-GENERIC/firmware.bin
-LFIRMWARE_PATH=.tmp/firmware.bin  # TODO: .tmp should maybe have different name
+LFIRMWARE_PATH=dist/$(FLAVOUR)-firmware.bin
 # temporary path to boot.py and webrepl_cfg.py with substituted password/etc
 BOOT_PY=.tmp/boot.py
 WEBREPL_CFG_PY=.tmp/webrepl_cfg.py
@@ -84,7 +84,7 @@ ssh_all: ssh_flash_esp32 ssh_install_webrepl
 ssh_reinstall_all: clean_ssh ssh_all
 
 # get firmware from docker to here
-download_esp32_firmware: $(LFIRMWARE_PATH)
+esp32_firmware: $(LFIRMWARE_PATH)
 
 ssh_minicom:
 	$(SSH_CMD) -t minicom -D /dev/ttyUSB0
@@ -97,7 +97,6 @@ clean_ssh:
 $(LFIRMWARE_PATH):
 	make up
 	mkdir -p $(shell dirname $(LFIRMWARE_PATH))
-	# if you build 
 	docker cp $(DOCKER_CONTAINER):$(DFIRMWARE_PATH) $(LFIRMWARE_PATH)
 
 

@@ -3,7 +3,8 @@ version: "2"
 services:
   app:
     build: .
-    image: micropython-docker
+    image: ${FLAVOUR}-docker
+    container_name: ${FLAVOUR}-docker
     volumes:
       - ./devicefs:/app/devicefs
       - ./scripts:/app/scripts

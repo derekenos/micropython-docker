@@ -20,9 +20,10 @@ RUN apt-get update && apt-get install -y \
 
 
 ARG branch=master
-ARG repo=https://github.com/pfalcon/pycopy.git
+ARG repo=https://github.com/micropython/micropython
 
 WORKDIR /app
+RUN echo git clone -b ${branch} ${repo} micropython
 RUN git clone -b ${branch} ${repo} micropython
 
 # Set up the toolchain and ESP-IDF
