@@ -10,8 +10,20 @@ else
 endif
 
 
-error:
-	echo "Type make<TAB><TAB> to see the available targets"
+help:
+	@echo " make build - build firmware. available params: FLAVOUR and BRANCH"
+	@echo "				FLAVOUR - can be either micropython or pycopy"
+	@echo "				BRANCH - default master, you can override it while building"
+	@echo " make erase-esp32-flash - erase local USB connected esp32"
+	@echo " make flash-esp32-firmware - flash local USB connected esp32"
+	@echo " make configure-device - configure local USB connected esp32"
+	@echo " make repl - get REPL in local USB connected esp32"
+	@echo " ## SSH JUMPSTATION ##"
+	@echo " make ssh_flash_esp32 - flash esp32 connected to ssh jumpstation (eg. raspberry pi)"
+	@echo " make ssh_install_webrepl - install webrepl on esp32 (via jumpstation) "
+	@echo " make ssh_all - flash and install webrepl via ssh jumpstation"
+	@echo ""
+	@echo "Type make<TAB><TAB> to see all available targets"
 
 up: 
 	$(DOCKER_COMPOSE) up -d --no-build
