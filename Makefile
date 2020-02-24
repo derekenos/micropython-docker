@@ -59,8 +59,8 @@ DOCKER_CONTAINER=`$(DOCKER_COMPOSE) ps -q app`
 DFIRMWARE_PATH=/app/micropython/ports/esp32/build-GENERIC/firmware.bin
 LFIRMWARE_PATH=dist/$(FLAVOUR)-firmware.bin
 # temporary path to boot.py and webrepl_cfg.py with substituted password/etc
-BOOT_PY=.tmp/boot.py
-WEBREPL_CFG_PY=.tmp/webrepl_cfg.py
+BOOT_PY=.deps/boot.py
+WEBREPL_CFG_PY=.deps/webrepl_cfg.py
 
 SSH_USER=pi
 SSH_HOST=bpii
@@ -101,10 +101,10 @@ esp32_firmware: $(LFIRMWARE_PATH)
 ssh_minicom:
 	$(SSH_CMD) -t minicom -D /dev/ttyUSB0
 
-ssh_flash_esp32: .tmp/.flashed
+ssh_flash_esp32: .deps/.flashed
 
 clean_ssh:
-	rm -rf .tmp
+	rm -rf .deps
 
 $(LFIRMWARE_PATH):
 	make up
@@ -113,24 +113,24 @@ $(LFIRMWARE_PATH):
 
 
 
-.tmp/.flashed: .tmp/.files_scpied
+.deps/.flashed: .deps/.files_scpied
 	# scp files to banana pi
 	$(SSH_ESPTOOL) erase_flash
 	$(SSH_ESPTOOL) write_flash -z 0x1000 /tmp/firmware.bin
 	touch $@
 
-ssh_install_webrepl: .tmp/.webrepl_cfg_installed .tmp/.boot_installed 
+ssh_install_webrepl: .deps/.webrepl_cfg_installed .deps/.boot_installed 
 
-.tmp/.files_scpied: $(LFIRMWARE_PATH) $(BOOT_PY) $(WEBREPL_CFG_PY)
+.deps/.files_scpied: $(LFIRMWARE_PATH) $(BOOT_PY) $(WEBREPL_CFG_PY)
 	scp -i $(SSH_KEY) $(LFIRMWARE_PATH) $(WEBREPL_CFG_PY) $(BOOT_PY) $(SSH_USERHOST):/tmp/
 	touch $@
 
 
-.tmp/.boot_installed: .tmp/.files_scpied .tmp/.flashed
+.deps/.boot_installed: .deps/.files_scpied .deps/.flashed
 	$(SSH_AMPY) put /tmp/boot.py 
 	touch $@
 
-.tmp/.webrepl_cfg_installed: .tmp/.files_scpied .tmp/.flashed
+.deps/.webrepl_cfg_installed: .deps/.files_scpied .deps/.flashed
 	$(SSH_AMPY) put /tmp/webrepl_cfg.py
 	touch $@
 
