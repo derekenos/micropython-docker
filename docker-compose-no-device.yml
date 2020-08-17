@@ -3,9 +3,10 @@ version: "2"
 services:
   app:
     build: .
-    image: micropython-docker
+    image: micropython-esp32
     volumes:
       - ./devicefs:/app/devicefs
       - ./scripts:/app/scripts
+      - ./firmware:/app/firmware
     stdin_open: true
     tty: true

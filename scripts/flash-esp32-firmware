@@ -1,1 +1,9 @@
-esptool.py write_flash -z 0x1000 /app/micropython/ports/esp32/build-GENERIC/firmware.bin
+DEFAULT_VERSION=1.12
+
+if [ "$#" -ne 0 ]; then
+    VERSION=$1
+else
+    VERSION=$DEFAULT_VERSION
+fi
+
+esptool.py write_flash -z 0x1000 /app/firmware/versions/v$VERSION
