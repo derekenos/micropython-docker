@@ -8,11 +8,15 @@ shell:
 
 
 erase-esp32-flash:
-	@docker-compose run --rm app esptool.py erase_flash
+	@docker-compose run --rm app /bin/bash -l scripts/erase-esp32-flash
 
 
 flash-esp32-firmware:
 	@docker-compose run --rm app /bin/bash -l scripts/flash-esp32-firmware
+
+
+compile-and-flash-esp32-firmware:
+	@docker-compose run --rm app /bin/bash -l scripts/compile-and-flash-esp32-firmware
 
 
 configure-device:

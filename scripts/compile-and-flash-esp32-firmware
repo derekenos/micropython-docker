@@ -1,0 +1,12 @@
+
+ESP32_PORT_DIR=/app/micropython/ports/esp32
+
+# Copy project modules directory to the ESP32 port modules directory for
+# compilation into the firmware for improved performance.
+cp -r devicefs/modules $ESP32_PORT_DIR
+
+# Build the firmware with the project modules.
+make --silent --directory=$ESP32_PORT_DIR
+
+# Write the firmware to the device.
+esptool.py write_flash -z 0x1000 $ESP32_PORT_DIR/build-GENERIC/firmware.bin

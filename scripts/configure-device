@@ -2,8 +2,8 @@
 # Fail on first non-zreo exit code
 set -e
 
-echo Copying files from ./devicefs/ to device root
-for f in `find devicefs/ -name '*.py' -o -name '*.json' -o -name '*.html' -o -name '*.js' -o -name '*.css'`; do
+echo Copying non-modules files from ./devicefs/ to device root
+for f in `find devicefs/ -path devicefs/modules -prune -false -o -name '*.py' -o -name '*.json' -o -name '*.html' -o -name '*.js' -o -name '*.css'`; do
     ff=${f#devicefs/}
     echo "Putting: $ff";
     set +e
