@@ -4,6 +4,12 @@ set -e
 
 echo Copying files from ./devicefs/ to device root
 for f in `find devicefs/ -name '*.py' -o -name '*.json' -o -name '*.html' -o -name '*.js' -o -name '*.css'`; do
+    # Automatically freeze all Python modules except for boot.py and main.py
+    if [[ ${f: -3} == ".py" && ${f: -7} != "boot.py" && ${f: -7} != "main.py" ]]; then
+      freeze $f
+      f=${f:: -3}.mpy
+    fi
+
     ff=${f#devicefs/}
     echo "Putting: $ff";
     set +e
