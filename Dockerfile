@@ -12,15 +12,16 @@ RUN apt-get update && apt-get install -y \
 
 
 ###############################################################################
-# Set up ESP-IDF
+# Copy in local micropython for the build
 ###############################################################################
 
-# Clone micropython now so that we can get the hash of the ESP IDF version that
-# it supports.
-WORKDIR /app
-RUN git clone https://github.com/micropython/micropython.git
-WORKDIR micropython
-RUN git reset --hard ce1de1faf082abfcc5469ad3d70b88aaa0060ec3
+WORKDIR /app/micropython
+COPY micropython .
+
+
+###############################################################################
+# Set up ESP-IDF
+###############################################################################
 
 # Set up the toolchain and ESP-IDF
 # https://github.com/micropython/micropython/tree/master/ports/esp32#setting-up-the-toolchain-and-esp-idf
@@ -29,7 +30,7 @@ RUN git reset --hard ce1de1faf082abfcc5469ad3d70b88aaa0060ec3
 WORKDIR /app/esp
 
 # https://www.reddit.com/r/esp32/comments/5f1emg/esp_idf_make_menuconfig_problem/dagqcjf
-RUN git clone --recursive https://github.com/espressif/esp-idf.git
+RUN git clone https://github.com/espressif/esp-idf.git
 
 WORKDIR esp-idf
 
@@ -83,8 +84,7 @@ WORKDIR /app/micropython
 
 # Build the cross compiler.
 RUN make -C mpy-cross \
-    && git submodule init lib/berkeley-db-1.xx \
-    && git submodule update
+    && git submodule update --init --recursive
 RUN echo 'function freeze(){ /app/micropython/mpy-cross/mpy-cross $1;  '\
     'chown `stat -c%u $1` ${1%%.*}.mpy; }' >>  ~/.bashrc
 
@@ -93,7 +93,6 @@ WORKDIR ports
 
 # Unix
 WORKDIR unix
-RUN git submodule update --init
 RUN make
 
 # ESP32
