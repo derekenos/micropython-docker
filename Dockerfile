@@ -12,11 +12,11 @@ RUN apt-get update && apt-get install -y \
 
 
 ###############################################################################
-# Copy in local micropython for the build
+# Clone the micropython repository
 ###############################################################################
 
-WORKDIR /app/micropython
-COPY micropython .
+WORKDIR /app/
+RUN git clone https://github.com/derekenos/micropython --branch=1.13
 
 
 ###############################################################################
