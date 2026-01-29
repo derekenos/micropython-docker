@@ -2,6 +2,16 @@
 # Fail on first non-zreo exit code
 set -e
 
+recursiveMkdir() {
+  local _dirname=`dirname $1`
+  set +e
+  if ! ampy mkdir $_dirname > /dev/null 2>&1; then
+    set -e
+    recursiveMkdir `dirname $1`
+    ampy mkdir $_dirname
+  fi
+}
+
 echo Copying files from ./devicefs/ to device root
 for f in `find devicefs/ -name '*.py' -o -name '*.json' -o -name '*.html' -o -name '*.js' -o -name '*.css'`; do
     ff=${f#devicefs/}
@@ -9,7 +19,8 @@ for f in `find devicefs/ -name '*.py' -o -name '*.json' -o -name '*.html' -o -na
     set +e
     if ! ampy put $f $ff > /dev/null 2>&1; then
        set -e
-       ampy mkdir `dirname $ff`
+       echo "Creating missing directory path (`dirname $ff`) and retrying put..."
+       recursiveMkdir $ff
        ampy put $f $ff
     fi
     set -e
