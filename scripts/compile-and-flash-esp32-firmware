@@ -1,4 +1,6 @@
 
+set -e
+
 ESP32_PORT_DIR=/app/micropython/ports/esp32
 
 # Copy project modules directory to the ESP32 port modules directory for
@@ -6,7 +8,8 @@ ESP32_PORT_DIR=/app/micropython/ports/esp32
 cp -r devicefs/modules $ESP32_PORT_DIR
 
 # Build the firmware with the project modules.
+source /app/esp/esp-idf/export.sh
 make --silent --directory=$ESP32_PORT_DIR
 
 # Write the firmware to the device.
-esptool.py write_flash -z 0x1000 $ESP32_PORT_DIR/build-GENERIC/firmware.bin
+esptool write-flash -z 0x1000 $ESP32_PORT_DIR/build-ESP32_GENERIC/firmware.bin

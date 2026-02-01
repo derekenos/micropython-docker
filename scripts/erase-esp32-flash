@@ -1,1 +1,1 @@
-esptool.py erase_flash
+esptool erase-flash
